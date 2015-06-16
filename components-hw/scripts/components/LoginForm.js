@@ -16,7 +16,7 @@ module.exports = React.createClass({
 	},
 	commentSubmitted: function(e){
 		e.preventDefault();
-		console.log('user '+this.refs.loginInput.getDOMNode().value);
+		// console.log('user '+this.refs.loginInput.getDOMNode().value);
 		var login = new LoginModel({
 			user: this.refs.loginInput.getDOMNode().value,
 			password: this.refs.loginPass.getDOMNode().value

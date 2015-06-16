@@ -33387,22 +33387,23 @@ module.exports = React.createClass({
 			console.log(comment.validationError);
 		} else {
 			console.log(comment);
-			console.log(this.refs.commentAdded.getDOMNode());
+			// console.log(this.refs.commentAdded.getDOMNode());
 			// this.refs.commentAdded.getDOMNode().innerHTML.appendChild(comment.get('text'));
 		}
 
 		commentlist.add(comment);
-		commentlist.on('add', function (model) {
-			console.log('true');
-		});
+		commentlist.on('add', function (model) {});
 	}
 });
+
+// console.log('true')
 
 },{"../collections/CommentCollection.js":161,"../models/CommentModel.js":168,"backbone":1,"jquery":4,"react":159}],164:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
-var Comments = require('../models/CommentModel.js');
+var CommentList = require('../collections/CommentCollection.js');
+var CommentModel = require('../models/CommentModel.js');
 
 module.exports = React.createClass({
 	displayName: 'exports',
@@ -33410,13 +33411,18 @@ module.exports = React.createClass({
 	render: function render() {
 		return React.createElement(
 			'div',
-			null,
-			React.createElement(Comments, null)
+			{ ref: 'comment' },
+			'test'
 		);
+	},
+	componentWillMount: function componentWillMount() {
+		var comments = new CommentList();
+		this.refs.comment.getDOMNode().value().innerHtml();
 	}
+
 });
 
-},{"../models/CommentModel.js":168,"react":159}],165:[function(require,module,exports){
+},{"../collections/CommentCollection.js":161,"../models/CommentModel.js":168,"react":159}],165:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -33445,7 +33451,7 @@ module.exports = React.createClass({
 	},
 	commentSubmitted: function commentSubmitted(e) {
 		e.preventDefault();
-		console.log('user ' + this.refs.loginInput.getDOMNode().value);
+		// console.log('user '+this.refs.loginInput.getDOMNode().value);
 		var login = new LoginModel({
 			user: this.refs.loginInput.getDOMNode().value,
 			password: this.refs.loginPass.getDOMNode().value

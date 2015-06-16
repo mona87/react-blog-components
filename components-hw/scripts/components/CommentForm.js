@@ -36,13 +36,13 @@ module.exports = React.createClass({
 		}
 		else{		
 			 console.log(comment);
-			 console.log(this.refs.commentAdded.getDOMNode());
+			 // console.log(this.refs.commentAdded.getDOMNode());
 			// this.refs.commentAdded.getDOMNode().innerHTML.appendChild(comment.get('text'));
 		}
 		
 		commentlist.add(comment);
 		commentlist.on('add', function(model){
-			console.log('true')
+			// console.log('true')
 			
 		})
 

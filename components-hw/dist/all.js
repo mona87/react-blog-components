@@ -33260,6 +33260,17 @@ module.exports = require('./lib/React');
 
 var Backbone = require('backbone');
 Backbone.$ = require('jquery');
+var BlogModel = require('../models/BlogModel.js');
+
+module.exports = Backbone.Collection.extend({
+	model: BlogModel
+});
+
+},{"../models/BlogModel.js":169,"backbone":1,"jquery":4}],162:[function(require,module,exports){
+'use strict';
+
+var Backbone = require('backbone');
+Backbone.$ = require('jquery');
 var CommentModel = require('../models/CommentModel.js');
 
 module.exports = Backbone.Collection.extend({
@@ -33267,7 +33278,7 @@ module.exports = Backbone.Collection.extend({
 	url: ''
 });
 
-},{"../models/CommentModel.js":168,"backbone":1,"jquery":4}],162:[function(require,module,exports){
+},{"../models/CommentModel.js":170,"backbone":1,"jquery":4}],163:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -33277,14 +33288,26 @@ module.exports = React.createClass({
 	displayName: 'exports',
 
 	render: function render() {
+
+		var allCategories = ['animals', 'sports', 'movies'];
+		var chooseCategory = allCategories.map(function (category) {
+			return React.createElement(
+				'option',
+				{ key: category },
+				category
+			);
+		});
 		return React.createElement(
 			'form',
-			{ className: 'blog', onSubmit: this.commentSubmitted },
+			{ className: 'blog', onSubmit: this.postSubmitted },
 			React.createElement(
 				'label',
 				null,
 				'Blog Form'
 			),
+			React.createElement('div', { ref: 'error', className: 'error' }),
+			React.createElement('div', { ref: 'success', className: 'success' }),
+			React.createElement('div', { ref: 'success', className: 'success' }),
 			React.createElement('input', { ref: 'titleInput', id: 'title-input', type: 'text', placeholder: 'Enter title' }),
 			React.createElement('textarea', { ref: 'textEntry', placeholder: 'Enter a Post' }),
 			React.createElement(
@@ -33292,24 +33315,10 @@ module.exports = React.createClass({
 				{ ref: 'categories' },
 				React.createElement(
 					'option',
-					{ selected: true, disabled: true },
+					{ value: 'default' },
 					'Select a Category'
 				),
-				React.createElement(
-					'option',
-					null,
-					'Animals'
-				),
-				React.createElement(
-					'option',
-					null,
-					'Sports'
-				),
-				React.createElement(
-					'option',
-					null,
-					'Movies'
-				)
+				chooseCategory
 			),
 			React.createElement(
 				'button',
@@ -33318,42 +33327,136 @@ module.exports = React.createClass({
 			)
 		);
 	},
-	commentSubmitted: function commentSubmitted(e) {
+	postSubmitted: function postSubmitted(e) {
 		e.preventDefault();
 		var post = new BlogModel({
 			title: this.refs.titleInput.getDOMNode().value,
 			entry: this.refs.textEntry.getDOMNode().value,
-			category: this.refs.categories.getDOMNode().value
+			category: this.refs.categories.getDOMNode().value,
+			createdAt: new Date()
 
 		});
 		if (!post.isValid()) {
 			console.log(post.validationError);
+			this.refs.success.getDOMNode().innerHTML = '';
+			this.refs.error.getDOMNode().innerHTML = post.validationError;
 		} else {
-			console.log('Post submitted');
+			this.refs.titleInput.getDOMNode().value = '';
+			this.refs.textEntry.getDOMNode().value = '';
+			this.refs.categories.getDOMNode().value = 'default';
+			this.refs.error.getDOMNode().innerHTML = '';
+			this.props.newpost(post);
+			this.refs.success.getDOMNode().innerHTML = 'Post submitted!';
 		}
 	}
 
 });
 
-},{"../models/BlogModel.js":167,"react":159}],163:[function(require,module,exports){
+},{"../models/BlogModel.js":169,"react":159}],164:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
-var $ = require('jquery');
+var _ = require('backbone/node_modules/underscore');
 var Backbone = require('backbone');
 Backbone.$ = require('jquery');
-var CommentModel = require('../models/CommentModel.js');
-var CommentCollection = require('../collections/CommentCollection.js');
 
-// var Commentlist = require('./Commentlist.js')
+module.exports = React.createClass({
+	displayName: 'exports',
+
+	componentWillMount: function componentWillMount() {
+		this.props.posts.on('add', this.addPost);
+	},
+	getInitialState: function getInitialState() {
+		return {
+			number: this.props.num,
+			text: ''
+		};
+	},
+	render: function render() {
+		var sortMods = this.props.posts.sortBy(function (mods) {
+			return -1 * mods.get('createdAt').getTime();
+		});
+		var topPosts = _.first(sortMods, this.state.number);
+		console.log(this.state.number);
+		var topElements = topPosts.map(function (model) {
+			return React.createElement(
+				'div',
+				{ key: model.cid },
+				React.createElement(
+					'h3',
+					null,
+					model.get('title'),
+					React.createElement('br', null),
+					React.createElement(
+						'span',
+						{ className: 'date' },
+						model.get('createdAt').toString(),
+						' | ',
+						model.get('category')
+					)
+				),
+				React.createElement(
+					'p',
+					null,
+					model.get('entry')
+				)
+			);
+		});
+		return React.createElement(
+			'div',
+			{ className: 'blog-input' },
+			React.createElement(
+				'h3',
+				null,
+				'Number of Post to Show'
+			),
+			React.createElement('input', { type: 'text', ref: 'number', onChange: this.numChange }),
+			React.createElement(
+				'div',
+				{ className: 'mypost' },
+				topElements,
+				' ',
+				React.createElement(
+					'p',
+					null,
+					this.state.text
+				)
+			)
+		);
+	},
+	addPost: function addPost(model) {
+		this.forceUpdate();
+	},
+	numChange: function numChange(e) {
+		var newNum = this.refs.number.getDOMNode().value;
+		newNum = parseInt(newNum);
+		if (newNum === 0) {
+			this.setState({
+				number: newNum,
+				text: 'There are no blog posts yet.'
+			});
+		} else {
+			this.setState({
+				number: newNum,
+				text: ''
+			});
+		}
+	}
+});
+
+},{"backbone":1,"backbone/node_modules/underscore":2,"jquery":4,"react":159}],165:[function(require,module,exports){
+'use strict';
+
+var React = require('react');
+var CommentModel = require('../models/CommentModel.js');
 
 module.exports = React.createClass({
 	displayName: 'exports',
 
 	render: function render() {
 		return React.createElement(
-			'div',
-			null,
+			'form',
+			{ onSubmit: this.commentSubmitted },
 			React.createElement(
 				'div',
 				{ className: 'commentForm' },
@@ -33362,67 +33465,85 @@ module.exports = React.createClass({
 					null,
 					'Comment Form'
 				),
+				React.createElement('div', { ref: 'error', className: 'error' }),
+				React.createElement('input', { ref: 'commentText', type: 'text', placeholder: 'Enter comment here...' }),
 				React.createElement(
-					'form',
-					{ onSubmit: this.commentSubmitted },
-					React.createElement('input', { ref: 'commentText', type: 'text', placeholder: 'Enter comment here...' }),
-					React.createElement(
-						'button',
-						null,
-						'Submit '
-					)
+					'button',
+					null,
+					'Submit '
 				)
-			),
-			React.createElement('div', { ref: 'commentAdded', className: 'comments' })
+			)
 		);
 	},
 	commentSubmitted: function commentSubmitted(e) {
 		e.preventDefault();
-		var commentlist = new CommentCollection();
 		var comment = new CommentModel({
 			text: this.refs.commentText.getDOMNode().value,
 			createdAt: new Date()
 		});
 		if (!comment.isValid()) {
-			console.log(comment.validationError);
+			this.refs.error.getDOMNode().innerHTML = comment.validationError;
 		} else {
-			console.log(comment);
-			// console.log(this.refs.commentAdded.getDOMNode());
-			// this.refs.commentAdded.getDOMNode().innerHTML.appendChild(comment.get('text'));
+			this.refs.error.getDOMNode().innerHTML = '';
+			text: this.refs.commentText.getDOMNode().value = '';
+			this.props.newcomment(comment);
 		}
-
-		commentlist.add(comment);
-		commentlist.on('add', function (model) {});
 	}
 });
 
-// console.log('true')
-
-},{"../collections/CommentCollection.js":161,"../models/CommentModel.js":168,"backbone":1,"jquery":4,"react":159}],164:[function(require,module,exports){
+},{"../models/CommentModel.js":170,"react":159}],166:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
-var CommentList = require('../collections/CommentCollection.js');
-var CommentModel = require('../models/CommentModel.js');
+var Backbone = require('backbone');
+Backbone.$ = require('jquery');
 
 module.exports = React.createClass({
 	displayName: 'exports',
 
+	componentWillMount: function componentWillMount() {
+		this.props.comments.on('add', this.addComment);
+	},
 	render: function render() {
+		console.log('true');
+		var comment = this.props.comments.map(function (model) {
+			return React.createElement(
+				'div',
+				{ key: model.cid },
+				React.createElement(
+					'div',
+					{ className: 'date' },
+					model.get('createdAt').toString()
+				),
+				React.createElement(
+					'div',
+					null,
+					React.createElement(
+						'span',
+						null,
+						React.createElement(
+							'strong',
+							null,
+							'user:'
+						)
+					),
+					' ',
+					model.get('text')
+				)
+			);
+		});
 		return React.createElement(
 			'div',
-			{ ref: 'comment' },
-			'test'
+			{ className: 'comments' },
+			comment
 		);
 	},
-	componentWillMount: function componentWillMount() {
-		var comments = new CommentList();
-		this.refs.comment.getDOMNode().value().innerHtml();
+	addComment: function addComment(model) {
+		this.forceUpdate();
 	}
-
 });
 
-},{"../collections/CommentCollection.js":161,"../models/CommentModel.js":168,"react":159}],165:[function(require,module,exports){
+},{"backbone":1,"jquery":4,"react":159}],167:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -33440,8 +33561,10 @@ module.exports = React.createClass({
 				null,
 				'Login Form'
 			),
+			React.createElement('div', { ref: 'error', className: 'error' }),
+			React.createElement('div', { ref: 'success', className: 'success' }),
 			React.createElement('input', { ref: 'loginInput', type: 'text', placeholder: 'Enter username' }),
-			React.createElement('input', { ref: 'loginPass', type: 'text', placeholder: 'Enter password' }),
+			React.createElement('input', { ref: 'loginPass', type: 'password', placeholder: 'Enter password' }),
 			React.createElement(
 				'button',
 				null,
@@ -33458,31 +33581,73 @@ module.exports = React.createClass({
 		});
 		if (!login.isValid()) {
 			console.log(login.validationError);
+			this.refs.success.getDOMNode().innerHTML = '';
+			this.refs.error.getDOMNode().innerHTML = login.validationError;
 		} else {
-			console.log('Success!');
+			this.refs.error.getDOMNode().innerHTML = '';
+			this.refs.success.getDOMNode().innerHTML = 'Success!';
 		}
 	}
 
 });
 
-},{"../models/LoginModel.js":169,"react":159}],166:[function(require,module,exports){
+},{"../models/LoginModel.js":171,"react":159}],168:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
 var CommentForm = require('./components/CommentForm.js');
-var Commentlist = require('./components/Commentlist.js');
+var CommentList = require('./components/CommentList.js');
+var CommentCollection = require('./collections/CommentCollection.js');
 var BlogForm = require('./components/BlogForm.js');
 var LoginForm = require('./components/LoginForm.js');
+var BlogCollection = require('./collections/BlogCollection.js');
+var BlogList = require('./components/BlogList.js');
+var comments = new CommentCollection();
+
+var blogPost = new BlogCollection([{
+	title: 'Dogs',
+	entry: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+	category: 'animals',
+	createdAt: new Date('2015-06-16T08:13:00'),
+	userId: 'mona'
+}, {
+	title: 'Cats',
+	entry: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+	category: 'animals',
+	createdAt: new Date('2015-06-16T10:04:00'),
+	userId: 'mona'
+}, {
+	title: 'Movies',
+	entry: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+	category: 'movies',
+	createdAt: new Date('2015-07-16T08:13:00'),
+	userId: 'mona'
+}, {
+	title: 'Basketball',
+	entry: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+	category: 'sports',
+	createdAt: new Date('2015-06-16T10:04:00'),
+	userId: 'mona'
+}]);
+
+function newPost(model) {
+	blogPost.add(model);
+}
+function newComment(model) {
+	comments.add(model);
+}
 
 React.render(React.createElement(
 	'div',
 	null,
-	React.createElement(BlogForm, null),
-	React.createElement(CommentForm, null),
+	React.createElement(BlogForm, { newpost: newPost }),
+	React.createElement(BlogList, { posts: blogPost, num: 3 }),
+	React.createElement(CommentForm, { newcomment: newComment }),
+	React.createElement(CommentList, { comments: comments }),
 	React.createElement(LoginForm, null)
 ), document.getElementById('container'));
 
-},{"./components/BlogForm.js":162,"./components/CommentForm.js":163,"./components/Commentlist.js":164,"./components/LoginForm.js":165,"react":159}],167:[function(require,module,exports){
+},{"./collections/BlogCollection.js":161,"./collections/CommentCollection.js":162,"./components/BlogForm.js":163,"./components/BlogList.js":164,"./components/CommentForm.js":165,"./components/CommentList.js":166,"./components/LoginForm.js":167,"react":159}],169:[function(require,module,exports){
 'use strict';
 
 var Backbone = require('backbone');
@@ -33493,7 +33658,9 @@ module.exports = Backbone.Model.extend({
 	defaults: {
 		title: null,
 		entry: null,
-		category: null
+		category: null,
+		createdAt: null,
+		userId: null
 	},
 	validate: function validate(model) {
 		if (validator.isNull(model.title)) {
@@ -33506,7 +33673,7 @@ module.exports = Backbone.Model.extend({
 	}
 });
 
-},{"backbone":1,"jquery":4,"validator":160}],168:[function(require,module,exports){
+},{"backbone":1,"jquery":4,"validator":160}],170:[function(require,module,exports){
 'use strict';
 
 var Backbone = require('backbone');
@@ -33527,7 +33694,7 @@ module.exports = Backbone.Model.extend({
 	}
 });
 
-},{"backbone":1,"jquery":4}],169:[function(require,module,exports){
+},{"backbone":1,"jquery":4}],171:[function(require,module,exports){
 'use strict';
 
 var Backbone = require('backbone');
@@ -33546,15 +33713,15 @@ module.exports = Backbone.Model.extend({
 			return 'Enter a valid email address';
 		} else if (validator.isNull(model.password)) {
 			return 'Enter a password';
-		} else if (model.user !== 'mona@gmail.com' && model.password !== 'password') {
+		} else if (model.user !== 'mona@gmail.com') {
 			return 'That username / password combination doesn\'t exist.';
-		} else {
-			return 'success';
+		} else if (model.password !== 'password') {
+			return 'That username / password combination doesn\'t exist.';
 		}
 	}
 });
 
-},{"backbone":1,"jquery":4,"validator":160}]},{},[166])
+},{"backbone":1,"jquery":4,"validator":160}]},{},[168])
 
 
 //# sourceMappingURL=all.js.map

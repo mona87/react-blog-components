@@ -1,20 +1,28 @@
 var React = require('react');
-var CommentList= require('../collections/CommentCollection.js');
-var CommentModel = require('../models/CommentModel.js');
+var Backbone = require('backbone');
+Backbone.$ = require('jquery');
 
 module.exports = React.createClass({
+	componentWillMount: function(){
+		this.props.comments.on('add', this.addComment);
+	},
 	render: function(){
+		console.log('true')
+		var comment = this.props.comments.map(function(model){
+				return(
+					<div key={model.cid}>
+					<div className="date">{model.get('createdAt').toString()}</div>
+					<div><span><strong>user:</strong></span> {model.get('text')}</div>
+					</div>
+				);			
+		});
 		return(
-			<div ref="comment">
-				test
+			<div className="comments">
+				{comment}
 			</div>
 		);
 	},
-	  componentWillMount: function (){
-	  	var comments = new CommentList();
-		this.refs.comment.getDOMNode().value().innerHtml();
-	  }
-		
-	
-
+	addComment: function(model){
+		this.forceUpdate();
+	}
 });

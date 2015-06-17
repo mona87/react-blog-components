@@ -1,6 +1,13 @@
+body{
+	font-family: Arial, serif;
+}
 .blog input, .blog textarea{
 	display: block;
 	width: 100%;
+}
+
+.blog textarea{
+	height: 100px;
 }
 
 .blog input{
@@ -11,7 +18,7 @@
 .blog{
 	margin: 0 auto;
 	width: 100%;
-	max-width: 300px;
+	max-width: 500px;
 }
 .blog select{
 	width: 50%;
@@ -22,18 +29,23 @@
 .commentForm{
 	margin: 20px auto auto auto;
 	width: 100%;
-	max-width: 300px;
+	max-width: 500px;
+	border-top:1px solid #eeeeee;
+	padding-top: 10px;
 }
 
 .commentForm input{
 	width: 100%;
 	margin: 5px 0 5px 0;
+
 }
 
 .loginform{
 	width: 100%;
-	max-width: 300px;
+	max-width: 500px;
 	margin: 10px auto auto auto;
+	border-top:1px solid #eeeeee;
+	padding-top: 10px;
 }
 
 .loginform label{
@@ -47,6 +59,47 @@
 }
 
 .loginform input{
-	margin-bottom: 5px;
+	margin-bottom: 10px;
 	margin-top: 5px;
+}
+
+.mypost {
+	margin: 0 auto;
+	width: 100%;
+	max-width:500px;
+}
+
+.error{
+	margin:5px auto auto auto; 
+	width:100%; 
+	max-width: 500px; 
+	color:red;
+}
+
+.success{
+	margin:5px auto auto auto; 
+	width:100%; 
+	max-width: 500px; 
+	color:green;
+}
+
+.comments{
+	margin: 10px auto auto auto;
+	width: 100%;
+	max-width:500px;
+}
+
+.date{
+	font-size: 10px;
+	font-weight: normal;
+}
+
+.blog-input{
+	margin: 10px auto auto auto;
+	width: 100%;
+	max-width:500px;
+}
+
+.blog-input input{
+	width: 100%;
 }

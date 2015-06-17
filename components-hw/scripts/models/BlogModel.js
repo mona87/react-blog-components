@@ -6,7 +6,9 @@ module.exports = Backbone.Model.extend({
 	defaults: {
 		title: null,
 		entry: null,
-		category: null
+		category: null,
+		createdAt: null,
+		userId: null
 	},
 	validate: function(model){
 		if(validator.isNull(model.title)){

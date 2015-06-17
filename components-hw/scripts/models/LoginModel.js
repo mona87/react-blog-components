@@ -17,11 +17,12 @@ module.exports = Backbone.Model.extend({
 		else if(validator.isNull(model.password)){
 			return 'Enter a password'
 		}		
-		else if(model.user !== 'mona@gmail.com' && model.password !== 'password'){
+		else if(model.user !== 'mona@gmail.com'){
 			return 'That username / password combination doesn\'t exist.'
 		}
-		else{
-			return 'success'
+		else if( model.password !== 'password'){
+			return 'That username / password combination doesn\'t exist.'
 		}
+
 	}
 })

@@ -7,8 +7,10 @@ module.exports = React.createClass({
 
 			<form className="loginform" onSubmit={this.commentSubmitted}>
 				<label>Login Form</label>
+				<div ref="error" className="error"></div>
+				<div ref="success" className="success"></div>
 				<input ref="loginInput" type="text" placeholder="Enter username"/>
-				<input ref="loginPass" type="text" placeholder="Enter password"/>
+				<input ref="loginPass" type="password" placeholder="Enter password"/>
 				<button>Submit</button>
 			</form>
 
@@ -23,9 +25,13 @@ module.exports = React.createClass({
 		});
 		if(!login.isValid()){
 			console.log(login.validationError);
+			this.refs.success.getDOMNode().innerHTML = '';
+			this.refs.error.getDOMNode().innerHTML = login.validationError;
 		}
 		else{
-			console.log('Success!');
+			this.refs.error.getDOMNode().innerHTML = '';
+		 	this.refs.success.getDOMNode().innerHTML = 'Success!';
+		
 		}
 	}
 
